@@ -20,6 +20,7 @@ import ManageCategories from "./pages/admin/ManageCategories";
 import ManageOrders from "./pages/admin/ManageOrders";
 import { useAuth } from "./context/AuthContext";
 
+// Protected Route - requires authentication
 const ProtectedRoute = ({ roles, children }) => {
   const { auth } = useAuth();
 
@@ -29,25 +30,52 @@ const ProtectedRoute = ({ roles, children }) => {
   return children;
 };
 
+// Public Route - redirects authenticated users to dashboard
+const PublicRoute = ({ children }) => {
+  const { auth } = useAuth();
+
+  if (auth.user) {
+    return <Navigate to={auth.user.role === "admin" ? "/admin" : "/products"} replace />;
+  }
+
+  return children;
+};
+
 const App = () => {
+  const { auth } = useAuth();
+  
+  // Root path behavior: Login first for unauthenticated users, then dashboard based on role
+  const getRootRedirect = () => {
+    if (auth?.user) {
+      // User is authenticated - redirect to dashboard based on role
+      return auth.user.role === "admin" ? "/admin" : "/products";
+    }
+    // User not authenticated - always start at login
+    return "/login";
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
       <main className="flex-1 w-full px-4 py-6 md:px-6">
         <div className="mx-auto w-full max-w-7xl">
           <Routes>
-            <Route path="/" element={<Home />} />
+            {/* Root path - LOGIN FIRST for new users, then dashboard based on role */}
+            <Route path="/" element={<Navigate to={getRootRedirect()} replace />} />
+            {/* Public Routes - redirects to dashboard if already logged in */}
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/feedback" element={<Feedback />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-
+            <Route path="/home" element={<Home />} />
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+            {/* User/Customer Routes - requires authentication */}
             <Route path="/products" element={<ProtectedRoute roles={["user", "admin"]}><Products /></ProtectedRoute>} />
             <Route path="/products/:id" element={<ProtectedRoute roles={["user", "admin"]}><ProductDetails /></ProtectedRoute>} />
             <Route path="/cart" element={<ProtectedRoute roles={["user", "admin"]}><Cart /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute roles={["user", "admin"]}><Orders /></ProtectedRoute>} />
 
+            {/* Admin Routes - requires admin role */}
             <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/products" element={<ProtectedRoute roles={["admin"]}><ManageProducts /></ProtectedRoute>} />
             <Route path="/admin/products/add" element={<ProtectedRoute roles={["admin"]}><AddProduct /></ProtectedRoute>} />
@@ -55,6 +83,9 @@ const App = () => {
             <Route path="/admin/categories" element={<ProtectedRoute roles={["admin"]}><ManageCategories /></ProtectedRoute>} />
             <Route path="/admin/orders" element={<ProtectedRoute roles={["admin"]}><ManageOrders /></ProtectedRoute>} />
             <Route path="/admin/reports" element={<ProtectedRoute roles={["admin"]}><Reports /></ProtectedRoute>} />
+
+            {/* Catch-all - redirect to login if not authenticated */}
+            <Route path="*" element={<Navigate to={getRootRedirect()} replace />} />
           </Routes>
         </div>
       </main>

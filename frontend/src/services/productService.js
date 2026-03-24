@@ -24,3 +24,8 @@ export const deleteProduct = async (id) => {
   const { data } = await api.delete(`/products/${id}`);
   return data;
 };
+
+export const getNextProductId = async () => {
+  const { data } = await api.get("/products/next-id");
+  return data;
+};

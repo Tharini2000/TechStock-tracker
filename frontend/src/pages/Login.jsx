@@ -50,12 +50,19 @@ const Login = () => {
         password: form.password,
       });
 
+      // Update auth context with user data
       loginContext(data);
-      navigate(data.user.role === "admin" ? "/admin" : "/products");
+
+      // Navigate based on user role
+      if (data.user.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/products", { replace: true });
+      }
     } catch (error) {
       setStatus({
         type: "error",
-        text: error.response?.data?.message || "Login failed.",
+        text: error.response?.data?.message || "Login failed. Please try again.",
       });
     } finally {
       setLoading(false);

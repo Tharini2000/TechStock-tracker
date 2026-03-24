@@ -62,18 +62,11 @@ const Footer = () => {
                 <Mail size={14} /> support@techstock.com
               </li>
               <li className="flex items-center gap-2">
-                <Phone size={14} /> +94 77 123 4567
+                <Phone size={14} /> +94 77 843 7500
               </li>
             </ul>
 
-            <div className="mt-3 flex gap-2">
-              <a className="p-2 rounded-md bg-white/5 hover:bg-white/10">
-                <Github size={14} />
-              </a>
-              <a className="p-2 rounded-md bg-white/5 hover:bg-white/10">
-                <Linkedin size={14} />
-              </a>
-            </div>
+           
           </div>
         </div>
 

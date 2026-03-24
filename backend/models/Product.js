@@ -26,6 +26,13 @@ const productSchema = new mongoose.Schema(
       required: true,
       min: 0
     },
+    productId: {
+      type: String,
+      required: true,
+      unique: true,
+      immutable: true,
+      trim: true
+    },
     image: {
       type: String,
       default: "https://via.placeholder.com/300x200?text=Product"

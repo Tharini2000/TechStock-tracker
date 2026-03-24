@@ -186,6 +186,7 @@ const ManageProducts = () => {
                   <table className="min-w-full text-sm">
                     <thead>
                       <tr className="border-b border-white/10 text-left text-slate-400">
+                        <th className="px-3 py-3 font-medium">Product ID</th>
                         <th className="px-3 py-3 font-medium">Image</th>
                         <th className="px-3 py-3 font-medium">Name</th>
                         <th className="px-3 py-3 font-medium">Category</th>
@@ -201,6 +202,10 @@ const ManageProducts = () => {
                           key={product._id}
                           className="border-b border-white/5 text-slate-300 transition hover:bg-white/5"
                         >
+                          <td className="px-3 py-4 text-white">
+                            {product.productId || "—"}
+                          </td>
+
                           <td className="px-3 py-4">
                             <img
                               src={product.image}
@@ -280,6 +285,10 @@ const ManageProducts = () => {
                         />
 
                         <div className="min-w-0 flex-1">
+                          <p className="text-xs text-slate-400">Product ID</p>
+                          <h4 className="truncate text-sm font-medium text-white">
+                            {product.productId || "—"}
+                          </h4>
                           <h3 className="truncate text-lg font-semibold text-white">
                             {product.name}
                           </h3>

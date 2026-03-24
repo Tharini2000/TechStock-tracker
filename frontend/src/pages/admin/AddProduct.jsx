@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
-import { createProduct } from "../../services/productService";
+import { createProduct, getNextProductId } from "../../services/productService";
 import { useToast } from "../../context/ToastContext";
 import { fetchCategories } from "../../services/categoryService";
 import {
@@ -27,14 +27,25 @@ const AddProduct = () => {
     category: "",
     quantity: "",
     image: null,
+    productId: ""
   });
 
   const [imagePreview, setImagePreview] = useState("");
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    const loadNextProductId = async () => {
+      try {
+        const { nextProductId } = await getNextProductId();
+        setForm((prev) => ({ ...prev, productId: nextProductId || "" }));
+      } catch {
+        showToast("Failed to fetch next product ID", "error");
+      }
+    };
+
     const loadCategories = async () => {
       try {
         setLoadingCategories(true);
@@ -50,6 +61,7 @@ const AddProduct = () => {
       }
     };
 
+    loadNextProductId();
     loadCategories();
   }, [showToast]);
 
@@ -75,21 +87,48 @@ const AddProduct = () => {
       const base64String = event.target?.result;
       setForm({ ...form, image: base64String });
       setImagePreview(base64String);
+      setErrors({ ...errors, image: "" }); // Clear image error
     };
     reader.readAsDataURL(file);
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!form.name.trim()) {
+      newErrors.name = "Product name is required";
+    }
+
+    if (!form.category) {
+      newErrors.category = "Category is required";
+    }
+
+    if (!form.price || Number(form.price) <= 0) {
+      newErrors.price = "Price must be greater than 0";
+    }
+
+    if (!form.quantity && form.quantity !== "0") {
+      newErrors.quantity = "Quantity is required";
+    } else if (Number(form.quantity) < 0) {
+      newErrors.quantity = "Quantity cannot be negative";
+    }
+
+    if (!form.image) {
+      newErrors.image = "Product image is required";
+    }
+
+    return newErrors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({}); // Clear previous errors
 
-    if (
-      !form.name.trim() ||
-      !form.category ||
-      Number(form.price) < 0 ||
-      Number(form.quantity) < 0 ||
-      !form.image
-    ) {
-      showToast("Please fill in all required fields including an image", "error");
+    const newErrors = validateForm();
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      showToast("Please fill in all required fields correctly", "error");
       return;
     }
 
@@ -102,7 +141,7 @@ const AddProduct = () => {
         quantity: Number(form.quantity),
       });
 
-      showToast("Product added", "success");
+      showToast("Product added successfully", "success");
       navigate("/admin/products");
     } catch (error) {
       showToast(
@@ -182,7 +221,18 @@ const AddProduct = () => {
               <div className="grid gap-5">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-300">
-                    Product Name
+                    Product ID
+                  </label>
+                  <input
+                    className="w-full rounded-xl border border-white/10 bg-slate-900/70 py-3 px-4 text-white cursor-not-allowed"
+                    value={form.productId}
+                    readOnly
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                    Product Name <span className="text-red-400">*</span>
                   </label>
                   <div className="relative">
                     <PackagePlus
@@ -190,20 +240,30 @@ const AddProduct = () => {
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                     />
                     <input
-                      className="w-full rounded-xl border border-white/10 bg-slate-900/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
+                      className={`w-full rounded-xl border bg-slate-900/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition ${
+                        errors.name
+                          ? "border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
+                          : "border-white/10 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
+                      }`}
                       placeholder="Enter product name"
                       value={form.name}
-                      onChange={(e) =>
-                        setForm({ ...form, name: e.target.value })
-                      }
+                      onChange={(e) => {
+                        setForm({ ...form, name: e.target.value });
+                        if (e.target.value.trim()) {
+                          setErrors({ ...errors, name: "" });
+                        }
+                      }}
                     />
                   </div>
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-400">{errors.name}</p>
+                  )}
                 </div>
 
                 <div className="grid gap-5 md:grid-cols-2">
                   <div>
                     <label className="mb-2 block text-sm font-medium text-slate-300">
-                      Category
+                      Category <span className="text-red-400">*</span>
                     </label>
                     <div className="relative">
                       <Tag
@@ -211,11 +271,18 @@ const AddProduct = () => {
                         className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                       />
                       <select
-                        className="w-full appearance-none rounded-xl border border-white/10 bg-slate-900/70 py-3 pl-11 pr-4 text-white outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
+                        className={`w-full appearance-none rounded-xl border bg-slate-900/70 py-3 pl-11 pr-4 text-white outline-none transition ${
+                          errors.category
+                            ? "border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
+                            : "border-white/10 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
+                        }`}
                         value={form.category}
-                        onChange={(e) =>
-                          setForm({ ...form, category: e.target.value })
-                        }
+                        onChange={(e) => {
+                          setForm({ ...form, category: e.target.value });
+                          if (e.target.value) {
+                            setErrors({ ...errors, category: "" });
+                          }
+                        }}
                         disabled={loadingCategories}
                       >
                         <option value="" className="bg-slate-900">
@@ -234,11 +301,14 @@ const AddProduct = () => {
                         ))}
                       </select>
                     </div>
+                    {errors.category && (
+                      <p className="mt-1 text-sm text-red-400">{errors.category}</p>
+                    )}
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-medium text-slate-300">
-                      Quantity
+                      Quantity <span className="text-red-400">*</span>
                     </label>
                     <div className="relative">
                       <Boxes
@@ -248,21 +318,31 @@ const AddProduct = () => {
                       <input
                         type="number"
                         min="0"
-                        className="w-full rounded-xl border border-white/10 bg-slate-900/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
+                        className={`w-full rounded-xl border bg-slate-900/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition ${
+                          errors.quantity
+                            ? "border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
+                            : "border-white/10 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
+                        }`}
                         placeholder="Enter quantity"
                         value={form.quantity}
-                        onChange={(e) =>
-                          setForm({ ...form, quantity: e.target.value })
-                        }
+                        onChange={(e) => {
+                          setForm({ ...form, quantity: e.target.value });
+                          if (e.target.value && Number(e.target.value) >= 0) {
+                            setErrors({ ...errors, quantity: "" });
+                          }
+                        }}
                       />
                     </div>
+                    {errors.quantity && (
+                      <p className="mt-1 text-sm text-red-400">{errors.quantity}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid gap-5 md:grid-cols-2">
                   <div>
                     <label className="mb-2 block text-sm font-medium text-slate-300">
-                      Price
+                      Price <span className="text-red-400">*</span>
                     </label>
                     <div className="relative">
                       <DollarSign
@@ -272,19 +352,30 @@ const AddProduct = () => {
                       <input
                         type="number"
                         min="0"
-                        className="w-full rounded-xl border border-white/10 bg-slate-900/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
+                        step="0.01"
+                        className={`w-full rounded-xl border bg-slate-900/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition ${
+                          errors.price
+                            ? "border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
+                            : "border-white/10 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
+                        }`}
                         placeholder="Enter price"
                         value={form.price}
-                        onChange={(e) =>
-                          setForm({ ...form, price: e.target.value })
-                        }
+                        onChange={(e) => {
+                          setForm({ ...form, price: e.target.value });
+                          if (e.target.value && Number(e.target.value) > 0) {
+                            setErrors({ ...errors, price: "" });
+                          }
+                        }}
                       />
                     </div>
+                    {errors.price && (
+                      <p className="mt-1 text-sm text-red-400">{errors.price}</p>
+                    )}
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-medium text-slate-300">
-                      Product Image
+                      Product Image <span className="text-red-400">*</span>
                     </label>
                     <div className="relative">
                       <ImageIcon
@@ -297,17 +388,24 @@ const AddProduct = () => {
                         className="absolute inset-0 opacity-0 cursor-pointer"
                         onChange={handleImageChange}
                       />
-                      <div className="w-full rounded-xl border border-white/10 bg-slate-900/70 py-3 pl-11 pr-4 text-white cursor-pointer transition hover:border-brand-500 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20">
+                      <div className={`w-full rounded-xl border bg-slate-900/70 py-3 pl-11 pr-4 text-white cursor-pointer transition ${
+                        errors.image
+                          ? "border-red-500"
+                          : "border-white/10 hover:border-brand-500"
+                      }`}>
                         {form.image ? (
-                          <span className="text-sm">Image selected ✓</span>
+                          <span className="text-sm text-emerald-400">Image selected ✓</span>
                         ) : (
                           <span className="text-sm text-slate-500">Click to select an image</span>
                         )}
                       </div>
+                      <p className="mt-2 text-xs text-slate-500">
+                        JPG, PNG, GIF (Max 5MB)
+                      </p>
                     </div>
-                    <p className="mt-2 text-xs text-slate-500">
-                      JPG, PNG, GIF (Max 5MB)
-                    </p>
+                    {errors.image && (
+                      <p className="mt-1 text-sm text-red-400">{errors.image}</p>
+                    )}
                   </div>
                 </div>
 
@@ -339,7 +437,7 @@ const AddProduct = () => {
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-500 to-brand-700 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     <Save size={18} />
-                    {saving ? "Saving..." : "Save Product"}
+                    {saving ? "Saving..." : "Add Product"}
                   </button>
 
                   <Link

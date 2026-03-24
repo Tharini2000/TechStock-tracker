@@ -3,6 +3,7 @@ import { body } from "express-validator";
 import {
   createProduct,
   deleteProduct,
+  getNextProductId,
   getProductById,
   getProducts,
   updateProduct
@@ -11,6 +12,7 @@ import { authorizeRoles, protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+router.get("/next-id", protect, getNextProductId);
 router.get("/", protect, getProducts);
 router.get("/:id", protect, getProductById);
 

@@ -15,14 +15,48 @@ const buildFilter = (query) => {
   return filter;
 };
 
+const getNextProductIdValue = async () => {
+  const latest = await Product.findOne({ productId: { $regex: /^P-\d{3}$/ } })
+    .sort({ productId: -1 })
+    .select("productId")
+    .lean();
+
+  if (!latest || !latest.productId) {
+    return "P-001";
+  }
+
+  const current = parseInt(latest.productId.replace(/^P-/, ""), 10);
+  const next = isNaN(current) ? 1 : current + 1;
+  return `P-${String(next).padStart(3, "0")}`;
+};
+
 export const createProduct = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const product = await Product.create(req.body);
+    const payload = {
+      ...req.body,
+      productId: req.body.productId || (await getNextProductIdValue())
+    };
+
+    const existing = await Product.findOne({ productId: payload.productId });
+    if (existing) {
+      return res.status(409).json({ message: "Product ID already exists" });
+    }
+
+    const product = await Product.create(payload);
     const populated = await product.populate("category", "categoryName");
     res.status(201).json(populated);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getNextProductId = async (req, res, next) => {
+  try {
+    const nextId = await getNextProductIdValue();
+    res.status(200).json({ nextProductId: nextId });
   } catch (error) {
     next(error);
   }
@@ -57,7 +91,10 @@ export const getProductById = async (req, res, next) => {
 
 export const updateProduct = async (req, res, next) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    const updatePayload = { ...req.body };
+    delete updatePayload.productId;
+
+    const product = await Product.findByIdAndUpdate(req.params.id, updatePayload, {
       new: true,
       runValidators: true
     }).populate("category", "categoryName");

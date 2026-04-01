@@ -23,6 +23,8 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "customer",
+    adminCode: "",
   });
 
   const [status, setStatus] = useState({ type: "", text: "" });
@@ -68,6 +70,14 @@ const Register = () => {
       return;
     }
 
+    if (form.role === "admin" && !form.adminCode.trim()) {
+      setStatus({
+        type: "error",
+        text: "Admin code is required for admin registration.",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       setStatus({ type: "", text: "" });
@@ -76,6 +86,8 @@ const Register = () => {
         name: form.name,
         email: form.email,
         password: form.password,
+        role: form.role,
+        adminCode: form.role === "admin" ? form.adminCode : undefined,
       });
 
       setStatus({
@@ -297,6 +309,45 @@ const Register = () => {
                   </button>
                 </div>
               </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-300">
+                  Account Type
+                </label>
+                <div className="relative">
+                  <select
+                    name="role"
+                    value={form.role}
+                    onChange={handleChange}
+                    className="w-full rounded-xl border border-white/10 bg-slate-900/70 py-3 pl-4 pr-4 text-white placeholder:text-slate-500 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
+                  >
+                    <option value="customer">Customer</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+              </div>
+
+              {form.role === "admin" && (
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                    Admin Code
+                  </label>
+                  <div className="relative">
+                    <ShieldCheck
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                    <input
+                      type="password"
+                      name="adminCode"
+                      placeholder="Enter admin code"
+                      value={form.adminCode}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-white/10 bg-slate-900/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
+                    />
+                  </div>
+                </div>
+              )}
 
               <StatusMessage type={status.type} message={status.text} />
 

@@ -15,18 +15,25 @@ export const registerUser = async (req, res, next) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, adminCode } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
+    // Validate admin code if registering as admin
+    if (role === "admin") {
+      if (!adminCode || adminCode !== process.env.ADMIN_CODE) {
+        return res.status(400).json({ message: "Invalid admin code" });
+      }
+    }
+
     const user = await User.create({
       name,
       email,
       password,
-      role: role === "admin" ? "admin" : "user"
+      role: role === "admin" ? "admin" : "customer"
     });
 
     return res.status(201).json({

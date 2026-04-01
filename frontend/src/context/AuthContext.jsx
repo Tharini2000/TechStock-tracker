@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    localStorage.removeItem("techstock_auth");
     setAuth({ token: "", user: null });
   };
 

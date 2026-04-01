@@ -57,7 +57,7 @@ const Login = () => {
       if (data.user.role === "admin") {
         navigate("/admin", { replace: true });
       } else {
-        navigate("/products", { replace: true });
+        navigate("/home", { replace: true });
       }
     } catch (error) {
       setStatus({

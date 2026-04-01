@@ -213,7 +213,7 @@ const Orders = () => {
                       className="inline-flex items-center gap-2 rounded-xl bg-amber-500/15 px-4 py-2 text-sm font-semibold text-amber-300 transition hover:bg-amber-500/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <Pencil size={16} />
-                      {updatingId === order._id ? "Updating..." : "Update (+1 first item)"}
+                      {updatingId === order._id ? "Updating..." : "Update "}
                     </button>
 
                     <button

@@ -35,7 +35,7 @@ const PublicRoute = ({ children }) => {
   const { auth } = useAuth();
 
   if (auth.user) {
-    return <Navigate to={auth.user.role === "admin" ? "/admin" : "/products"} replace />;
+    return <Navigate to={auth.user.role === "admin" ? "/admin" : "/home"} replace />;
   }
 
   return children;
@@ -48,7 +48,7 @@ const App = () => {
   const getRootRedirect = () => {
     if (auth?.user) {
       // User is authenticated - redirect to dashboard based on role
-      return auth.user.role === "admin" ? "/admin" : "/products";
+      return auth.user.role === "admin" ? "/admin" : "/home";
     }
     // User not authenticated - always start at login
     return "/login";
@@ -70,10 +70,10 @@ const App = () => {
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
             {/* User/Customer Routes - requires authentication */}
-            <Route path="/products" element={<ProtectedRoute roles={["user", "admin"]}><Products /></ProtectedRoute>} />
-            <Route path="/products/:id" element={<ProtectedRoute roles={["user", "admin"]}><ProductDetails /></ProtectedRoute>} />
-            <Route path="/cart" element={<ProtectedRoute roles={["user", "admin"]}><Cart /></ProtectedRoute>} />
-            <Route path="/orders" element={<ProtectedRoute roles={["user", "admin"]}><Orders /></ProtectedRoute>} />
+            <Route path="/products" element={<ProtectedRoute roles={["customer", "admin"]}><Products /></ProtectedRoute>} />
+            <Route path="/products/:id" element={<ProtectedRoute roles={["customer", "admin"]}><ProductDetails /></ProtectedRoute>} />
+            <Route path="/cart" element={<ProtectedRoute roles={["customer", "admin"]}><Cart /></ProtectedRoute>} />
+            <Route path="/orders" element={<ProtectedRoute roles={["customer", "admin"]}><Orders /></ProtectedRoute>} />
 
             {/* Admin Routes - requires admin role */}
             <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>} />

@@ -9,17 +9,18 @@ import {
   ShieldCheck,
   Sparkles,
   ClipboardPenLine,
+  Star,
 } from "lucide-react";
 
 const Feedback = () => {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", message: "", rating: 0 });
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.email || !form.message) {
+    if (!form.name || !form.email || !form.message || form.rating === 0) {
       showToast("All fields are required", "error");
       return;
     }
@@ -31,9 +32,10 @@ const Feedback = () => {
 
     try {
       setLoading(true);
+      console.log("Submitting feedback:", form); // Debug log
       await submitFeedback(form);
       showToast("Feedback submitted successfully", "success");
-      setForm({ name: "", email: "", message: "" });
+      setForm({ name: "", email: "", message: "", rating: 0 });
     } catch (error) {
       showToast(
         error.response?.data?.message || "Failed to submit feedback",
@@ -203,6 +205,36 @@ const Feedback = () => {
                       setForm({ ...form, message: e.target.value })
                     }
                   />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-3 block text-sm font-medium text-slate-300">
+                  Rate Your Experience
+                </label>
+                <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-900/70 p-4">
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setForm({ ...form, rating: star })}
+                        className="transition hover:scale-110"
+                      >
+                        <Star
+                          size={28}
+                          className={`${
+                            star <= form.rating
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-slate-500 hover:text-yellow-300"
+                          } transition`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  <div className="ml-auto text-sm font-semibold text-slate-300">
+                    {form.rating > 0 ? `${form.rating} / 5` : "Select rating"}
+                  </div>
                 </div>
               </div>
 

@@ -36,6 +36,10 @@ const Products = () => {
     loadProducts();
   }, []);
 
+  useEffect(() => {
+    loadProducts();
+  }, [query]);
+
   const handleAddToCart = async (productId) => {
     try {
       await addToCart({ productId, quantity: 1 });

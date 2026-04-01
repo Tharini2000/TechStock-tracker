@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import { fetchDashboard } from "../../services/reportService";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -11,6 +12,7 @@ import {
   ClipboardList,
   ShieldCheck,
   TrendingUp,
+  MessageSquareText,
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -252,6 +254,21 @@ const AdminDashboard = () => {
                       points available
                     </p>
                   </div>
+
+                  <Link
+                    to="/admin/feedbacks"
+                    className="rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 transition hover:border-brand-500/30 hover:bg-brand-500/10"
+                  >
+                    <div className="flex items-center gap-2">
+                      <MessageSquareText size={16} className="text-brand-400" />
+                      <div>
+                        <p className="text-xs text-slate-400">Customer Feedback</p>
+                        <p className="mt-1 text-sm font-semibold text-white">
+                          Review customer feedbacks
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
                 </div>
               </div>
 

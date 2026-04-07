@@ -10,6 +10,7 @@ import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
+import contactSupportRoutes from "./routes/contactSupportRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 dotenv.config();
@@ -33,6 +34,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/feedback", feedbackRoutes);
+app.use("/api/contact-support", contactSupportRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

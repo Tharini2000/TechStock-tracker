@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   TrendingUp,
   MessageSquareText,
+  Headphones,
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -265,6 +266,21 @@ const AdminDashboard = () => {
                         <p className="text-xs text-slate-400">Customer Feedback</p>
                         <p className="mt-1 text-sm font-semibold text-white">
                           Review customer feedbacks
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/admin/contact-support"
+                    className="rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 transition hover:border-cyan-500/30 hover:bg-cyan-500/10"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Headphones size={16} className="text-cyan-400" />
+                      <div>
+                        <p className="text-xs text-slate-400">Contact Support</p>
+                        <p className="mt-1 text-sm font-semibold text-white">
+                          Review customer support requests
                         </p>
                       </div>
                     </div>

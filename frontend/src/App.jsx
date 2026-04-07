@@ -19,6 +19,7 @@ import Reports from "./pages/admin/Reports";
 import ManageCategories from "./pages/admin/ManageCategories";
 import ManageOrders from "./pages/admin/ManageOrders";
 import ViewFeedbacks from "./pages/admin/ViewFeedbacks";
+import ViewContactSupports from "./pages/admin/ViewContactSupports";
 import { useAuth } from "./context/AuthContext";
 
 // Protected Route - requires authentication
@@ -85,6 +86,7 @@ const App = () => {
             <Route path="/admin/orders" element={<ProtectedRoute roles={["admin"]}><ManageOrders /></ProtectedRoute>} />
             <Route path="/admin/reports" element={<ProtectedRoute roles={["admin"]}><Reports /></ProtectedRoute>} />
             <Route path="/admin/feedbacks" element={<ProtectedRoute roles={["admin"]}><ViewFeedbacks /></ProtectedRoute>} />
+            <Route path="/admin/contact-support" element={<ProtectedRoute roles={["admin"]}><ViewContactSupports /></ProtectedRoute>} />
 
             {/* Catch-all - redirect to login if not authenticated */}
             <Route path="*" element={<Navigate to={getRootRedirect()} replace />} />

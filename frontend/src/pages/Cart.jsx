@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { fetchCart, removeCartItem } from "../services/cartService";
+import {
+  fetchCart,
+  removeCartItem,
+  updateCartItemQuantity,
+} from "../services/cartService";
 import { placeOrder } from "../services/orderService";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useToast } from "../context/ToastContext";
@@ -10,13 +14,17 @@ import {
   PackageCheck,
   ArrowRight,
   Boxes,
+  Minus,
+  Plus,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Cart = () => {
+  const navigate = useNavigate();
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
+  const [updatingItemId, setUpdatingItemId] = useState(null);
   const { showToast } = useToast();
 
   const total = useMemo(() => {
@@ -58,12 +66,31 @@ const Cart = () => {
     }
   };
 
+  const handleQuantityChange = async (itemId, nextQuantity) => {
+    try {
+      setUpdatingItemId(itemId);
+      const updated = await updateCartItemQuantity(itemId, nextQuantity);
+      setCart(updated);
+      showToast(
+        nextQuantity <= 0 ? "Item removed from cart" : "Cart quantity updated",
+        "success"
+      );
+    } catch (error) {
+      showToast(
+        error.response?.data?.message || "Failed to update quantity",
+        "error"
+      );
+    } finally {
+      setUpdatingItemId(null);
+    }
+  };
+
   const handlePlaceOrder = async () => {
     try {
       setPlacing(true);
       await placeOrder();
       showToast("Order placed successfully", "success");
-      loadCart();
+      navigate("/orders");
     } catch (error) {
       showToast(
         error.response?.data?.message || "Order placement failed",
@@ -173,9 +200,50 @@ const Cart = () => {
                         <p className="mt-1 text-sm text-slate-400">
                           Unit Price: ${item.product.price.toFixed(2)}
                         </p>
-                        <p className="mt-1 text-sm text-slate-400">
-                          Quantity: {item.quantity}
-                        </p>
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                          <div className="inline-flex items-center rounded-xl border border-white/10 bg-slate-950/60">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleQuantityChange(item._id, item.quantity - 1)
+                              }
+                              disabled={updatingItemId === item._id}
+                              className="inline-flex h-10 w-10 items-center justify-center rounded-l-xl border-r border-white/10 text-slate-300 transition hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                              aria-label="Decrease quantity"
+                              title={
+                                item.quantity === 1
+                                  ? "Remove item"
+                                  : "Decrease quantity"
+                              }
+                            >
+                              <Minus size={16} />
+                            </button>
+
+                            <span className="min-w-12 px-4 text-center text-sm font-semibold text-white">
+                              {item.quantity}
+                            </span>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleQuantityChange(item._id, item.quantity + 1)
+                              }
+                              disabled={
+                                updatingItemId === item._id ||
+                                item.quantity >= item.product.quantity
+                              }
+                              className="inline-flex h-10 w-10 items-center justify-center rounded-r-xl border-l border-white/10 text-slate-300 transition hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                              aria-label="Increase quantity"
+                              title="Increase quantity"
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+
+                          <p className="text-xs text-slate-500">
+                            Available stock: {item.product.quantity}
+                          </p>
+                        </div>
                       </div>
                     </div>
 

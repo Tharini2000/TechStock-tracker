@@ -10,6 +10,10 @@ const getOrCreateCart = async (userId) => {
   return cart;
 };
 
+const populateCart = async (cart) => {
+  return cart.populate("items.product", "name price image quantity category");
+};
+
 export const addToCart = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -30,13 +34,17 @@ export const addToCart = async (req, res, next) => {
     const existingItem = cart.items.find((item) => item.product.toString() === productId);
 
     if (existingItem) {
-      existingItem.quantity += quantity;
+      const nextQuantity = existingItem.quantity + quantity;
+      if (nextQuantity > product.quantity) {
+        return res.status(400).json({ message: "Requested quantity exceeds available stock" });
+      }
+      existingItem.quantity = nextQuantity;
     } else {
       cart.items.push({ product: productId, quantity });
     }
 
     await cart.save();
-    const populated = await cart.populate("items.product", "name price image quantity category");
+    const populated = await populateCart(cart);
 
     res.status(200).json(populated);
   } catch (error) {
@@ -47,7 +55,43 @@ export const addToCart = async (req, res, next) => {
 export const getCart = async (req, res, next) => {
   try {
     const cart = await getOrCreateCart(req.user._id);
-    const populated = await cart.populate("items.product", "name price image quantity category");
+    const populated = await populateCart(cart);
+    res.status(200).json(populated);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateCartItemQuantity = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const nextQuantity = Number(req.body.quantity);
+    const cart = await getOrCreateCart(req.user._id);
+    const cartItem = cart.items.id(req.params.id);
+
+    if (!cartItem) {
+      return res.status(404).json({ message: "Cart item not found" });
+    }
+
+    if (nextQuantity <= 0) {
+      cart.items = cart.items.filter((item) => item._id.toString() !== req.params.id);
+    } else {
+      const product = await Product.findById(cartItem.product);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      if (nextQuantity > product.quantity) {
+        return res.status(400).json({ message: "Requested quantity exceeds available stock" });
+      }
+
+      cartItem.quantity = nextQuantity;
+    }
+
+    await cart.save();
+    const populated = await populateCart(cart);
     res.status(200).json(populated);
   } catch (error) {
     next(error);
@@ -60,7 +104,7 @@ export const removeCartItem = async (req, res, next) => {
     cart.items = cart.items.filter((item) => item._id.toString() !== req.params.id);
     await cart.save();
 
-    const populated = await cart.populate("items.product", "name price image quantity category");
+    const populated = await populateCart(cart);
     res.status(200).json(populated);
   } catch (error) {
     next(error);

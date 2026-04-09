@@ -10,6 +10,11 @@ export const fetchCart = async () => {
   return data;
 };
 
+export const updateCartItemQuantity = async (id, quantity) => {
+  const { data } = await api.patch(`/cart/${id}`, { quantity });
+  return data;
+};
+
 export const removeCartItem = async (id) => {
   const { data } = await api.delete(`/cart/${id}`);
   return data;

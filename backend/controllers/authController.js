@@ -24,7 +24,10 @@ export const registerUser = async (req, res, next) => {
 
     // Validate admin code if registering as admin
     if (role === "admin") {
-      if (!adminCode || adminCode !== process.env.ADMIN_CODE) {
+      const configuredAdminCode = (process.env.ADMIN_CODE || "Admin@123").trim();
+      const submittedAdminCode = typeof adminCode === "string" ? adminCode.trim() : "";
+
+      if (!submittedAdminCode || submittedAdminCode !== configuredAdminCode) {
         return res.status(400).json({ message: "Invalid admin code" });
       }
     }

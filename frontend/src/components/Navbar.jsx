@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import {
   Boxes,
   House,
   Info,
   Phone,
   MessageSquareText,
-  ShieldCheck,
   LogIn,
   UserPlus,
   LogOut,
@@ -25,6 +25,7 @@ import {
 
 const Navbar = () => {
   const { auth, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -75,6 +76,12 @@ const Navbar = () => {
   const dropdownItemClass =
     "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white";
 
+  const themeButtonText = isDark ? "Switch to Light Mode" : "Switch to Dark Mode";
+  const themeEmoji = isDark ? "☀️" : "🌙";
+
+  const themeToggleButtonClass =
+    "flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-lg text-slate-300 transition hover:bg-white/10 hover:text-white";
+
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl shadow-lg">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-6">
@@ -106,6 +113,16 @@ const Navbar = () => {
               </NavLink>
 
               <div className="ml-3 flex items-center gap-3 pl-3">
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className={themeToggleButtonClass}
+                  title={themeButtonText}
+                  aria-label={themeButtonText}
+                >
+                  <span aria-hidden="true">{themeEmoji}</span>
+                </button>
+
                 <div className="hidden rounded-xl bg-white/5 px-3 py-2 xl:block">
                   <p className="text-xs text-slate-400">Signed in as</p>
                   <p className="max-w-[140px] truncate text-sm font-semibold text-white">
@@ -154,6 +171,16 @@ const Navbar = () => {
 
               {user ? (
                 <div className="ml-3 flex items-center gap-3 pl-3">
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className={themeToggleButtonClass}
+                    title={themeButtonText}
+                    aria-label={themeButtonText}
+                  >
+                    <span aria-hidden="true">{themeEmoji}</span>
+                  </button>
+
                   {/* User dropdown */}
                   <div className="relative" ref={dropdownRef}>
                     <button
@@ -214,6 +241,16 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="ml-3 flex items-center gap-2 pl-3">
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className={themeToggleButtonClass}
+                    title={themeButtonText}
+                    aria-label={themeButtonText}
+                  >
+                    <span aria-hidden="true">{themeEmoji}</span>
+                  </button>
+
                   <NavLink
                     to="/login"
                     className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
@@ -236,18 +273,42 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Button */}
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white lg:hidden"
-        >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div className="flex items-center gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={themeToggleButtonClass}
+            title={themeButtonText}
+            aria-label={themeButtonText}
+          >
+            <span aria-hidden="true">{themeEmoji}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </nav>
 
       {/* Mobile Menu */}
       {mobileOpen && (
         <div className="border-t border-white/10 bg-slate-950/95 px-4 py-4 lg:hidden">
           <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="mb-2 flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-lg text-slate-300 transition hover:bg-white/10 hover:text-white"
+              title={themeButtonText}
+              aria-label={themeButtonText}
+            >
+              <span aria-hidden="true">{themeEmoji}</span>
+            </button>
+
             {isAdmin ? (
               <>
                 <div className="rounded-xl bg-white/5 p-3">

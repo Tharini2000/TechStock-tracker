@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TechStock Tracker</title>
+    <script>
+      (() => {
+        try {
+          const savedTheme = localStorage.getItem("techstock-theme");
+          const theme = savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
+          document.documentElement.classList.add(theme);
+          document.documentElement.style.colorScheme = theme;
+        } catch (error) {
+          document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = "dark";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -22,3 +22,206 @@ body,
 #root {
   min-height: 100vh;
 }
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+html.dark body {
+  color: #e2e8f0;
+  background: radial-gradient(circle at 10% 10%, #0f172a 0%, #020617 40%, #020617 100%);
+}
+
+html.light body {
+  color: #0f172a;
+  background: radial-gradient(circle at 10% 10%, #dbeafe 0%, #f8fafc 35%, #f1f5f9 100%);
+}
+
+html.light .bg-slate-950 {
+  background-color: rgb(248 250 252) !important;
+}
+
+html.light .bg-slate-950\/95 {
+  background-color: rgb(248 250 252 / 0.95) !important;
+}
+
+html.light .bg-slate-950\/80 {
+  background-color: rgb(248 250 252 / 0.8) !important;
+}
+
+html.light .bg-slate-950\/60 {
+  background-color: rgb(248 250 252 / 0.6) !important;
+}
+
+html.light .bg-slate-950\/50 {
+  background-color: rgb(248 250 252 / 0.5) !important;
+}
+
+html.light .bg-slate-900 {
+  background-color: rgb(255 255 255) !important;
+}
+
+html.light .bg-slate-900\/95 {
+  background-color: rgb(255 255 255 / 0.95) !important;
+}
+
+html.light .bg-slate-900\/80 {
+  background-color: rgb(255 255 255 / 0.8) !important;
+}
+
+html.light .bg-slate-900\/70 {
+  background-color: rgb(255 255 255 / 0.7) !important;
+}
+
+html.light .bg-slate-900\/60 {
+  background-color: rgb(255 255 255 / 0.6) !important;
+}
+
+html.light .bg-slate-900\/50 {
+  background-color: rgb(255 255 255 / 0.5) !important;
+}
+
+html.light .bg-slate-800 {
+  background-color: rgb(226 232 240) !important;
+}
+
+html.light .bg-white\/5 {
+  background-color: rgb(148 163 184 / 0.12) !important;
+}
+
+html.light .bg-white\/10 {
+  background-color: rgb(148 163 184 / 0.2) !important;
+}
+
+html.light .bg-white\/20 {
+  background-color: rgb(148 163 184 / 0.28) !important;
+}
+
+html.light .border-white\/5 {
+  border-color: rgb(203 213 225 / 0.7) !important;
+}
+
+html.light .border-white\/10 {
+  border-color: rgb(203 213 225 / 0.9) !important;
+}
+
+html.light .border-white\/20 {
+  border-color: rgb(148 163 184 / 0.65) !important;
+}
+
+html.light .text-white {
+  color: rgb(15 23 42) !important;
+}
+
+html.light .text-slate-200 {
+  color: rgb(51 65 85) !important;
+}
+
+html.light .text-slate-300 {
+  color: rgb(71 85 105) !important;
+}
+
+html.light .text-slate-400 {
+  color: rgb(100 116 139) !important;
+}
+
+html.light .text-slate-500 {
+  color: rgb(100 116 139) !important;
+}
+
+html.light .hover\:text-white:hover {
+  color: rgb(15 23 42) !important;
+}
+
+html.light .hover\:bg-white\/10:hover {
+  background-color: rgb(148 163 184 / 0.2) !important;
+}
+
+html.light .text-white.bg-gradient-to-r,
+html.light .text-white.bg-gradient-to-br,
+html.light .text-white.bg-brand-500,
+html.light .text-white.bg-brand-600,
+html.light .text-white.bg-brand-700,
+html.light .text-white.bg-rose-500,
+html.light .text-white.bg-rose-600,
+html.light .text-white.bg-rose-700 {
+  color: rgb(255 255 255) !important;
+}
+
+html.dark .bg-white {
+  background-color: rgb(15 23 42) !important;
+}
+
+html.dark .bg-slate-50 {
+  background-color: rgb(30 41 59 / 0.9) !important;
+}
+
+html.dark .bg-slate-100 {
+  background-color: rgb(30 41 59) !important;
+}
+
+html.dark .border-slate-100 {
+  border-color: rgb(148 163 184 / 0.08) !important;
+}
+
+html.dark .border-slate-200 {
+  border-color: rgb(148 163 184 / 0.18) !important;
+}
+
+html.dark .border-slate-300 {
+  border-color: rgb(148 163 184 / 0.3) !important;
+}
+
+html.dark .text-slate-900 {
+  color: rgb(248 250 252) !important;
+}
+
+html.dark .text-slate-800 {
+  color: rgb(241 245 249) !important;
+}
+
+html.dark .text-slate-700 {
+  color: rgb(226 232 240) !important;
+}
+
+html.dark .text-slate-600 {
+  color: rgb(148 163 184) !important;
+}
+
+html.dark .bg-amber-50 {
+  background-color: rgb(120 53 15 / 0.22) !important;
+}
+
+html.dark .bg-emerald-50 {
+  background-color: rgb(6 78 59 / 0.22) !important;
+}
+
+html.dark .bg-rose-50 {
+  background-color: rgb(136 19 55 / 0.22) !important;
+}
+
+html.dark .bg-blue-50,
+html.dark .bg-sky-50 {
+  background-color: rgb(12 74 110 / 0.22) !important;
+}
+
+html.dark .text-amber-700 {
+  color: rgb(252 211 77) !important;
+}
+
+html.dark .text-emerald-700 {
+  color: rgb(110 231 183) !important;
+}
+
+html.dark .text-rose-700 {
+  color: rgb(253 164 175) !important;
+}
+
+html.dark .text-blue-700,
+html.dark .text-sky-800 {
+  color: rgb(125 211 252) !important;
+}

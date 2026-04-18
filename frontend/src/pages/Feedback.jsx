@@ -249,10 +249,7 @@ const Feedback = () => {
             </form>
           </div>
 
-          <p className="mt-6 text-center text-sm text-slate-500">
-            Your feedback helps us build a better inventory management
-            experience.
-          </p>
+         
         </div>
       </div>
     </section>

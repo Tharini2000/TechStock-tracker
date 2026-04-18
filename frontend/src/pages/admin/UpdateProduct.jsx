@@ -155,9 +155,7 @@ const UpdateProduct = () => {
                   <h1 className="mt-1 text-3xl font-bold text-white">
                     Update Product
                   </h1>
-                  <p className="mt-2 text-sm text-slate-400">
-                    Modify product details, pricing, stock quantity, and category.
-                  </p>
+                  
                 </div>
               </div>
 

@@ -716,9 +716,7 @@ const Reports = () => {
                     className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
                   />
                 </div>
-                <p className="mt-2 text-xs text-slate-500">
-                  Select a report to view its details and download a PDF copy.
-                </p>
+                
               </div>
 
               <div className="flex flex-wrap gap-3 lg:justify-end">

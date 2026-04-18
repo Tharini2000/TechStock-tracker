@@ -82,9 +82,7 @@ const ManageProducts = () => {
                   <h1 className="mt-1 text-3xl font-bold text-white">
                     Manage Inventory
                   </h1>
-                  <p className="mt-2 text-sm text-slate-400">
-                    Add, edit, and organize products in your inventory system.
-                  </p>
+                 
                 </div>
               </div>
 

@@ -10,6 +10,10 @@ import {
   ShoppingBag,
   Clock3,
   ArrowRight,
+  Plus,
+  Minus,
+  Check,
+  X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -18,6 +22,8 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [editingOrderId, setEditingOrderId] = useState(null);
+  const [editQuantities, setEditQuantities] = useState({});
   const { showToast } = useToast();
 
   const loadOrders = async () => {
@@ -35,6 +41,49 @@ const Orders = () => {
   useEffect(() => {
     loadOrders();
   }, []);
+
+  const startEditingOrder = (order) => {
+    setEditingOrderId(order._id);
+    const quantities = {};
+    order.products?.forEach((item) => {
+      quantities[item.product._id] = item.quantity;
+    });
+    setEditQuantities(quantities);
+  };
+
+  const handleQuantityChange = (productId, newQty) => {
+    if (newQty < 1) return;
+    setEditQuantities({
+      ...editQuantities,
+      [productId]: newQty,
+    });
+  };
+
+  const saveOrderChanges = async (order) => {
+    try {
+      setUpdatingId(order._id);
+
+      const products = order.products?.map((item) => ({
+        product: item.product._id,
+        quantity: editQuantities[item.product._id] || item.quantity,
+      })) || [];
+
+      const payload = { products };
+      await updateOrder(order._id, payload);
+      showToast("Order updated successfully", "success");
+      setEditingOrderId(null);
+      loadOrders();
+    } catch (error) {
+      showToast(error.response?.data?.message || "Order update failed", "error");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const cancelEditingOrder = () => {
+    setEditingOrderId(null);
+    setEditQuantities({});
+  };
 
   const updateFirstItemQty = async (order) => {
     try {
@@ -207,50 +256,114 @@ const Orders = () => {
 
                   {/* Action buttons */}
                   <div className="flex flex-wrap gap-2 md:justify-end">
-                    <button
-                      onClick={() => updateFirstItemQty(order)}
-                      disabled={updatingId === order._id}
-                      className="inline-flex items-center gap-2 rounded-xl bg-amber-500/15 px-4 py-2 text-sm font-semibold text-amber-300 transition hover:bg-amber-500/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <Pencil size={16} />
-                      {updatingId === order._id ? "Updating..." : "Update "}
-                    </button>
+                    {editingOrderId === order._id ? (
+                      <>
+                        <button
+                          onClick={() => saveOrderChanges(order)}
+                          disabled={updatingId === order._id}
+                          className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-500/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Check size={16} />
+                          {updatingId === order._id ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                          onClick={cancelEditingOrder}
+                          disabled={updatingId === order._id}
+                          className="inline-flex items-center gap-2 rounded-xl bg-slate-500/15 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:bg-slate-500/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <X size={16} />
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => startEditingOrder(order)}
+                          className="inline-flex items-center gap-2 rounded-xl bg-brand-500/15 px-4 py-2 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Pencil size={16} />
+                          Edit
+                        </button>
 
-                    <button
-                      onClick={() => handleDelete(order._id)}
-                      disabled={deletingId === order._id}
-                      className="inline-flex items-center gap-2 rounded-xl bg-rose-500/15 px-4 py-2 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <Trash2 size={16} />
-                      {deletingId === order._id ? "Deleting..." : "Delete"}
-                    </button>
+                        <button
+                          onClick={() => handleDelete(order._id)}
+                          disabled={deletingId === order._id}
+                          className="inline-flex items-center gap-2 rounded-xl bg-rose-500/15 px-4 py-2 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Trash2 size={16} />
+                          {deletingId === order._id ? "Deleting..." : "Delete"}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 
                 {/* Products list */}
                 <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/60 p-5">
                   <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-300">
-                    Ordered Products
+                    Ordered Products {editingOrderId === order._id && <span className="text-amber-400">(Editing)</span>}
                   </h3>
 
                   <div className="space-y-3">
                     {order.products?.map((item) => (
                       <div
                         key={item.product._id}
-                        className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                       >
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-white">
                             {item.product.name}
                           </p>
                           <p className="text-sm text-slate-400">
-                            Quantity: {item.quantity}
+                            Price: ₨ {item.product.price.toFixed(2)}
                           </p>
                         </div>
 
-                        <div className="text-sm font-semibold text-slate-300">
-                          ₨ {(item.product.price * item.quantity).toFixed(2)}
-                        </div>
+                        {editingOrderId === order._id ? (
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() =>
+                                handleQuantityChange(
+                                  item.product._id,
+                                  (editQuantities[item.product._id] || item.quantity) - 1
+                                )
+                              }
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-400 transition hover:bg-rose-500/20 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
+                              disabled={(editQuantities[item.product._id] || item.quantity) <= 1}
+                            >
+                              <Minus size={16} />
+                            </button>
+
+                            <span className="inline-flex min-w-12 items-center justify-center rounded-lg border border-white/10 bg-slate-800/50 px-3 py-2 font-semibold text-white">
+                              {editQuantities[item.product._id] || item.quantity}
+                            </span>
+
+                            <button
+                              onClick={() =>
+                                handleQuantityChange(
+                                  item.product._id,
+                                  (editQuantities[item.product._id] || item.quantity) + 1
+                                )
+                              }
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 transition hover:bg-emerald-500/20 hover:text-emerald-300"
+                            >
+                              <Plus size={16} />
+                            </button>
+
+                            <div className="text-sm font-semibold text-slate-300">
+                              ₨ {(item.product.price * (editQuantities[item.product._id] || item.quantity)).toFixed(2)}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-4">
+                            <p className="text-sm text-slate-400">
+                              Quantity: {item.quantity}
+                            </p>
+                            <div className="text-sm font-semibold text-slate-300">
+                              ₨ {(item.product.price * item.quantity).toFixed(2)}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

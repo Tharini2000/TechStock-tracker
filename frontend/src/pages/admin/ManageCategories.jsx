@@ -134,10 +134,7 @@ const ManageCategories = () => {
                   <h1 className="mt-1 text-3xl font-bold text-white">
                     Manage Categories
                   </h1>
-                  <p className="mt-2 text-sm text-slate-400">
-                    Create, update, and organize categories for your inventory
-                    system.
-                  </p>
+                  
                 </div>
               </div>
 

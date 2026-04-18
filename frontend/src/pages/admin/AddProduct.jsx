@@ -179,10 +179,7 @@ const AddProduct = () => {
                   <h1 className="mt-1 text-3xl font-bold text-white">
                     Add New Product
                   </h1>
-                  <p className="mt-2 text-sm text-slate-400">
-                    Create a new inventory item with product details, pricing,
-                    stock quantity, and category.
-                  </p>
+                  
                 </div>
               </div>
 
@@ -504,16 +501,7 @@ const AddProduct = () => {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-brand-500/10 via-cyan-500/10 to-indigo-500/10 p-6 shadow-2xl backdrop-blur-xl">
-                <h3 className="text-lg font-semibold text-white">
-                  Product Entry Tips
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-300">
-                  Use a clear product name, select the correct category, upload a
-                  product image, and enter accurate stock quantity and pricing
-                  for better inventory management.
-                </p>
-              </div>
+             
             </div>
           </div>
         </div>

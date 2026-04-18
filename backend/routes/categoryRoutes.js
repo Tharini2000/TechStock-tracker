@@ -10,7 +10,7 @@ import { authorizeRoles, protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", protect, getCategories);
+router.get("/", getCategories);
 
 router.post(
   "/",

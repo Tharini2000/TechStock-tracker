@@ -17,7 +17,7 @@ const ProductCard = ({ product, onAddToCart }) => {
         </div>
         <p className="line-clamp-2 text-sm text-slate-600">{product.description}</p>
         <div className="flex items-center justify-between text-sm">
-          <p className="font-bold text-brand-700">${product.price.toFixed(2)}</p>
+          <p className="font-bold text-brand-700">₨ {product.price.toFixed(2)}</p>
           <p className="font-medium text-slate-600">Stock: {product.quantity}</p>
         </div>
 

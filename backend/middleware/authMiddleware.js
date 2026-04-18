@@ -45,7 +45,13 @@ export const optionalProtect = async (req, res, next) => {
 };
 
 export const authorizeRoles = (...roles) => (req, res, next) => {
-  if (!req.user || !roles.includes(req.user.role)) {
+  if (!req.user) {
+    return res.status(403).json({ message: "Forbidden: insufficient permissions" });
+  }
+  // Check role (case-insensitive)
+  const userRole = (req.user.role || "").toLowerCase();
+  const hasRole = roles.some(role => role.toLowerCase() === userRole);
+  if (!hasRole) {
     return res.status(403).json({ message: "Forbidden: insufficient permissions" });
   }
   next();

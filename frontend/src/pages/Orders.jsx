@@ -179,7 +179,7 @@ const Orders = () => {
                       <div className="rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3">
                         <p className="text-xs text-slate-400">Total Price</p>
                         <p className="mt-1 text-base font-bold text-white">
-                          ${order.totalPrice.toFixed(2)}
+                          ₨ {order.totalPrice.toFixed(2)}
                         </p>
                       </div>
 
@@ -249,7 +249,7 @@ const Orders = () => {
                         </div>
 
                         <div className="text-sm font-semibold text-slate-300">
-                          ${(item.product.price * item.quantity).toFixed(2)}
+                          ₨ {(item.product.price * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     ))}

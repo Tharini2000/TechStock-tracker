@@ -244,7 +244,7 @@ const ManageOrders = () => {
                             {order.userId?.name || "Unknown"}
                           </td>
                           <td className="px-3 py-4 text-white">
-                            ${order.totalPrice.toFixed(2)}
+                            ₨ {order.totalPrice.toFixed(2)}
                           </td>
                           <td className="px-3 py-4 text-slate-300">
                             {new Date(order.orderDate).toLocaleString()}
@@ -308,7 +308,7 @@ const ManageOrders = () => {
                             {order.userId?.name || "Unknown"}
                           </h3>
                           <p className="mt-1 text-sm text-slate-400">
-                            ${order.totalPrice.toFixed(2)}
+                            ₨ {order.totalPrice.toFixed(2)}
                           </p>
                         </div>
 

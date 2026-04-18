@@ -193,7 +193,7 @@ const AdminDashboard = () => {
 
                       <div className="flex flex-wrap items-center gap-3">
                         <p className="text-sm font-semibold text-white">
-                          ${order.totalPrice.toFixed(2)}
+                          ₨ {order.totalPrice.toFixed(2)}
                         </p>
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusClasses(

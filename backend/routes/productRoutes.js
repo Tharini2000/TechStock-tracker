@@ -12,9 +12,10 @@ import { authorizeRoles, protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/next-id", protect, getNextProductId);
-router.get("/", protect, getProducts);
-router.get("/:id", protect, getProductById);
+// Public endpoint - anyone can get next product ID (no auth required for display)
+router.get("/next-id", getNextProductId);
+router.get("/", getProducts);
+router.get("/:id", getProductById);
 
 router.post(
   "/",

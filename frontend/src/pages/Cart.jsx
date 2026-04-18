@@ -137,7 +137,7 @@ const Cart = () => {
               </div>
               <div className="rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-center">
                 <p className="text-lg font-bold text-white">
-                  ${total.toFixed(2)}
+                  ₨ {total.toFixed(2)}
                 </p>
                 <p className="text-xs text-slate-400">Total</p>
               </div>
@@ -198,7 +198,7 @@ const Cart = () => {
                           {item.product.name}
                         </h3>
                         <p className="mt-1 text-sm text-slate-400">
-                          Unit Price: ${item.product.price.toFixed(2)}
+                          Unit Price: ₨ {item.product.price.toFixed(2)}
                         </p>
                         <div className="mt-3 flex flex-wrap items-center gap-3">
                           <div className="inline-flex items-center rounded-xl border border-white/10 bg-slate-950/60">
@@ -249,7 +249,7 @@ const Cart = () => {
 
                     <div className="flex flex-col gap-3 md:items-end">
                       <div className="rounded-xl bg-white/5 px-4 py-2 text-sm font-semibold text-white">
-                        ${(item.product.price * item.quantity).toFixed(2)}
+                        ₨ {(item.product.price * item.quantity).toFixed(2)}
                       </div>
 
                       <button
@@ -292,7 +292,7 @@ const Cart = () => {
                 <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3">
                   <span className="text-sm text-slate-400">Subtotal</span>
                   <span className="text-sm font-semibold text-white">
-                    ${total.toFixed(2)}
+                    ₨ {total.toFixed(2)}
                   </span>
                 </div>
 
@@ -301,7 +301,7 @@ const Cart = () => {
                     Grand Total
                   </span>
                   <span className="text-lg font-bold text-white">
-                    ${total.toFixed(2)}
+                    ₨ {total.toFixed(2)}
                   </span>
                 </div>
               </div>

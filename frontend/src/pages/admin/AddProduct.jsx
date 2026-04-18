@@ -7,7 +7,6 @@ import { fetchCategories } from "../../services/categoryService";
 import {
   PackagePlus,
   Layers3,
-  DollarSign,
   Boxes,
   Image as ImageIcon,
   FileText,
@@ -345,10 +344,9 @@ const AddProduct = () => {
                       Price <span className="text-red-400">*</span>
                     </label>
                     <div className="relative">
-                      <DollarSign
-                        size={18}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                      />
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold">
+                        ₨
+                      </span>
                       <input
                         type="number"
                         min="0"
@@ -493,7 +491,7 @@ const AddProduct = () => {
                     <div className="flex items-center justify-between pt-2">
                       <span className="text-sm text-slate-400">Price</span>
                       <span className="font-semibold text-white">
-                        ${form.price || "0.00"}
+                        ₨ {form.price || "0.00"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

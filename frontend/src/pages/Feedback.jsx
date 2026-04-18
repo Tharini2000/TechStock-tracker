@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { submitFeedback } from "../services/feedbackService";
 import { useToast } from "../context/ToastContext";
+import { useAuth } from "../context/AuthContext";
 import {
   MessageSquareText,
   User,
@@ -16,6 +17,19 @@ const Feedback = () => {
   const [form, setForm] = useState({ name: "", email: "", message: "", rating: 0 });
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
+  const { auth } = useAuth();
+
+  const isLoggedInCustomer = Boolean(auth?.user && auth.user.role === "customer");
+
+  useEffect(() => {
+    if (auth?.user) {
+      setForm((prev) => ({
+        ...prev,
+        name: auth.user.name || prev.name,
+        email: auth.user.email || prev.email,
+      }));
+    }
+  }, [auth?.user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,10 +46,19 @@ const Feedback = () => {
 
     try {
       setLoading(true);
-      console.log("Submitting feedback:", form); // Debug log
-      await submitFeedback(form);
+      const payload = {
+        ...form,
+        name: auth?.user?.name || form.name,
+        email: auth?.user?.email || form.email,
+      };
+      await submitFeedback(payload);
       showToast("Feedback submitted successfully", "success");
-      setForm({ name: "", email: "", message: "", rating: 0 });
+      setForm(() => ({
+        name: auth?.user?.name || "",
+        email: auth?.user?.email || "",
+        message: "",
+        rating: 0,
+      }));
     } catch (error) {
       showToast(
         error.response?.data?.message || "Failed to submit feedback",
@@ -162,9 +185,15 @@ const Feedback = () => {
                     onChange={(e) =>
                       setForm({ ...form, name: e.target.value })
                     }
+                    readOnly={isLoggedInCustomer}
                     className="w-full rounded-xl border border-white/10 bg-slate-900/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
                   />
                 </div>
+                {isLoggedInCustomer && (
+                  <p className="mt-2 text-xs text-slate-400">
+                    Auto-filled from your account
+                  </p>
+                )}
               </div>
 
               <div>
@@ -183,9 +212,15 @@ const Feedback = () => {
                     onChange={(e) =>
                       setForm({ ...form, email: e.target.value })
                     }
+                    readOnly={isLoggedInCustomer}
                     className="w-full rounded-xl border border-white/10 bg-slate-900/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20"
                   />
                 </div>
+                {isLoggedInCustomer && (
+                  <p className="mt-2 text-xs text-slate-400">
+                    Auto-filled from your account
+                  </p>
+                )}
               </div>
 
               <div>

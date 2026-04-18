@@ -90,7 +90,10 @@ const Cart = () => {
       setPlacing(true);
       await placeOrder();
       showToast("Order placed successfully", "success");
-      navigate("/orders");
+      navigate("/orders", {
+        replace: true,
+        state: { refreshOrdersAt: Date.now() },
+      });
     } catch (error) {
       showToast(
         error.response?.data?.message || "Order placement failed",

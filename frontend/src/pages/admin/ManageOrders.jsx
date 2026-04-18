@@ -108,10 +108,7 @@ const ManageOrders = () => {
                   <h1 className="mt-1 text-3xl font-bold text-white">
                     Manage Purchase Requests
                   </h1>
-                  <p className="mt-2 text-sm text-slate-400">
-                    Review customer purchase requests and approve or reject them
-                    from the admin panel.
-                  </p>
+                 
                 </div>
               </div>
 
@@ -202,9 +199,7 @@ const ManageOrders = () => {
                 <h2 className="text-xl font-semibold text-white">
                   Purchase Request List
                 </h2>
-                <p className="text-sm text-slate-400">
-                  Review all submitted order requests
-                </p>
+               
               </div>
             </div>
 

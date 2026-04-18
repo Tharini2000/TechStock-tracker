@@ -60,9 +60,7 @@ const ViewFeedbacks = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">Customer Feedbacks</h1>
-              <p className="mt-1 text-sm text-slate-400">
-                Review feedbacks from your customers
-              </p>
+             
             </div>
           </div>
           <div className="ml-auto rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-center">

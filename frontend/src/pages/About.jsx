@@ -166,19 +166,10 @@ const About = () => {
               </div>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-5">
-              <p className="text-sm font-semibold text-white">Technology Stack</p>
-              <p className="mt-2 text-sm leading-6 text-slate-400">
-                Built using the <span className="text-white font-medium">MERN Stack</span> —
-                MongoDB, Express.js, React, and Node.js — to provide a fast,
-                scalable, and modern web application experience.
-              </p>
-            </div>
+           
           </div>
 
-          <p className="mt-6 text-center text-sm text-slate-500">
-            A smarter way to manage inventory, orders, and team operations.
-          </p>
+         
         </div>
       </div>
     </section>

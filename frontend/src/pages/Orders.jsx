@@ -15,9 +15,64 @@ import {
   Check,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const normalizeOrdersResponse = (payload) => {
+  const rawOrders = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.orders)
+      ? payload.orders
+      : Array.isArray(payload?.items)
+        ? payload.items
+        : [];
+
+  return rawOrders.map((order, orderIndex) => {
+    const rawProducts = Array.isArray(order?.products) ? order.products : [];
+
+    const products = rawProducts.map((item, itemIndex) => {
+      const rawProduct = item?.product;
+      const populatedProduct =
+        rawProduct && typeof rawProduct === "object" ? rawProduct : null;
+
+      const productId =
+        populatedProduct?._id ||
+        (typeof rawProduct === "string" ? rawProduct : null) ||
+        `missing-product-${order?._id || orderIndex}-${itemIndex}`;
+
+      return {
+        ...item,
+        quantity: Math.max(1, toNumber(item?.quantity, 1)),
+        product: {
+          _id: productId,
+          name: populatedProduct?.name || "Unavailable product",
+          price: toNumber(populatedProduct?.price ?? item?.price, 0),
+          image: populatedProduct?.image || "",
+        },
+      };
+    });
+
+    const computedTotal = products.reduce(
+      (sum, item) => sum + toNumber(item.product?.price) * toNumber(item.quantity, 1),
+      0
+    );
+
+    return {
+      ...order,
+      _id: order?._id || `order-${orderIndex}`,
+      status: order?.status || "pending",
+      products,
+      totalPrice: toNumber(order?.totalPrice, computedTotal),
+    };
+  });
+};
 
 const Orders = () => {
+  const location = useLocation();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
@@ -30,7 +85,7 @@ const Orders = () => {
     try {
       setLoading(true);
       const data = await fetchOrders();
-      setOrders(data || []);
+      setOrders(normalizeOrdersResponse(data));
     } catch {
       showToast("Failed to fetch orders", "error");
     } finally {
@@ -40,33 +95,51 @@ const Orders = () => {
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [location.state?.refreshOrdersAt]);
 
   const startEditingOrder = (order) => {
     setEditingOrderId(order._id);
     const quantities = {};
+
     order.products?.forEach((item) => {
-      quantities[item.product._id] = item.quantity;
+      if (!item?.product?._id || String(item.product._id).startsWith("missing-product-")) {
+        return;
+      }
+      quantities[item.product._id] = toNumber(item.quantity, 1);
     });
+
     setEditQuantities(quantities);
   };
 
   const handleQuantityChange = (productId, newQty) => {
     if (newQty < 1) return;
-    setEditQuantities({
-      ...editQuantities,
+
+    setEditQuantities((current) => ({
+      ...current,
       [productId]: newQty,
-    });
+    }));
   };
 
   const saveOrderChanges = async (order) => {
     try {
       setUpdatingId(order._id);
 
-      const products = order.products?.map((item) => ({
-        product: item.product._id,
-        quantity: editQuantities[item.product._id] || item.quantity,
-      })) || [];
+      const products =
+        order.products
+          ?.filter(
+            (item) =>
+              item?.product?._id &&
+              !String(item.product._id).startsWith("missing-product-")
+          )
+          .map((item) => ({
+            product: item.product._id,
+            quantity: editQuantities[item.product._id] || item.quantity,
+          })) || [];
+
+      if (products.length === 0) {
+        showToast("This order has no editable products", "error");
+        return;
+      }
 
       const payload = { products };
       await updateOrder(order._id, payload);
@@ -85,30 +158,6 @@ const Orders = () => {
     setEditQuantities({});
   };
 
-  const updateFirstItemQty = async (order) => {
-    try {
-      setUpdatingId(order._id);
-      const first = order.products?.[0];
-
-      if (!first) {
-        showToast("No products found in this order", "error");
-        return;
-      }
-
-      const payload = {
-        products: [{ product: first.product._id, quantity: first.quantity + 1 }],
-      };
-
-      await updateOrder(order._id, payload);
-      showToast("Order updated", "success");
-      loadOrders();
-    } catch (error) {
-      showToast(error.response?.data?.message || "Order update failed", "error");
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
   const handleDelete = async (orderId) => {
     try {
       setDeletingId(orderId);
@@ -123,17 +172,17 @@ const Orders = () => {
   };
 
   const getStatusClasses = (status) => {
-    const value = status?.toLowerCase();
+    const value = String(status || "").toLowerCase();
 
     if (value === "pending") {
       return "bg-amber-500/15 text-amber-300 border border-amber-500/20";
     }
 
-    if (value === "completed" || value === "delivered") {
+    if (value === "completed" || value === "delivered" || value === "approved") {
       return "bg-emerald-500/15 text-emerald-300 border border-emerald-500/20";
     }
 
-    if (value === "cancelled") {
+    if (value === "cancelled" || value === "rejected") {
       return "bg-rose-500/15 text-rose-300 border border-rose-500/20";
     }
 
@@ -146,7 +195,6 @@ const Orders = () => {
 
   return (
     <section className="relative min-h-[calc(100vh-8rem)] overflow-hidden bg-slate-950 px-4 py-10">
-      {/* Background glow */}
       <div className="absolute inset-0">
         <div className="absolute left-[-100px] top-[-80px] h-72 w-72 rounded-full bg-brand-500/20 blur-3xl" />
         <div className="absolute bottom-[-100px] right-[-80px] h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl" />
@@ -154,7 +202,6 @@ const Orders = () => {
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl space-y-8">
-        {/* Header */}
         <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-lg">
@@ -174,7 +221,6 @@ const Orders = () => {
           </div>
         </div>
 
-        {/* Info banner */}
         <div className="flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-amber-200 shadow-lg">
           <Clock3 size={20} className="mt-0.5 shrink-0" />
           <p className="text-sm leading-6">
@@ -191,7 +237,7 @@ const Orders = () => {
               No orders found
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-slate-400">
-              You haven’t placed any orders yet. Start browsing products and place your first order.
+              You have not placed any orders yet. Start browsing products and place your first order.
             </p>
 
             <Link
@@ -209,7 +255,6 @@ const Orders = () => {
                 key={order._id}
                 className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl transition hover:border-brand-500/30 hover:bg-white/10"
               >
-                {/* Top row */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
                     <div className="flex items-center gap-3">
@@ -228,14 +273,14 @@ const Orders = () => {
                       <div className="rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3">
                         <p className="text-xs text-slate-400">Total Price</p>
                         <p className="mt-1 text-base font-bold text-white">
-                          ₨ {order.totalPrice.toFixed(2)}
+                          Rs {toNumber(order.totalPrice).toFixed(2)}
                         </p>
                       </div>
 
                       <div className="rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3">
                         <p className="text-xs text-slate-400">Items</p>
                         <p className="mt-1 text-base font-bold text-white">
-                          {order.products?.reduce((sum, item) => sum + item.quantity, 0) || 0}
+                          {order.products?.reduce((sum, item) => sum + toNumber(item.quantity, 1), 0) || 0}
                         </p>
                       </div>
 
@@ -254,7 +299,6 @@ const Orders = () => {
                     </div>
                   </div>
 
-                  {/* Action buttons */}
                   <div className="flex flex-wrap gap-2 md:justify-end">
                     {editingOrderId === order._id ? (
                       <>
@@ -298,74 +342,86 @@ const Orders = () => {
                   </div>
                 </div>
 
-                {/* Products list */}
                 <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/60 p-5">
                   <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-300">
                     Ordered Products {editingOrderId === order._id && <span className="text-amber-400">(Editing)</span>}
                   </h3>
 
                   <div className="space-y-3">
-                    {order.products?.map((item) => (
-                      <div
-                        key={item.product._id}
-                        className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium text-white">
-                            {item.product.name}
-                          </p>
-                          <p className="text-sm text-slate-400">
-                            Price: ₨ {item.product.price.toFixed(2)}
-                          </p>
-                        </div>
+                    {order.products?.map((item, index) => {
+                      const productId = item.product?._id || `${order._id}-${index}`;
+                      const canEditProduct =
+                        item.product?._id &&
+                        !String(item.product._id).startsWith("missing-product-");
 
-                        {editingOrderId === order._id ? (
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() =>
-                                handleQuantityChange(
-                                  item.product._id,
-                                  (editQuantities[item.product._id] || item.quantity) - 1
-                                )
-                              }
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-400 transition hover:bg-rose-500/20 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
-                              disabled={(editQuantities[item.product._id] || item.quantity) <= 1}
-                            >
-                              <Minus size={16} />
-                            </button>
-
-                            <span className="inline-flex min-w-12 items-center justify-center rounded-lg border border-white/10 bg-slate-800/50 px-3 py-2 font-semibold text-white">
-                              {editQuantities[item.product._id] || item.quantity}
-                            </span>
-
-                            <button
-                              onClick={() =>
-                                handleQuantityChange(
-                                  item.product._id,
-                                  (editQuantities[item.product._id] || item.quantity) + 1
-                                )
-                              }
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 transition hover:bg-emerald-500/20 hover:text-emerald-300"
-                            >
-                              <Plus size={16} />
-                            </button>
-
-                            <div className="text-sm font-semibold text-slate-300">
-                              ₨ {(item.product.price * (editQuantities[item.product._id] || item.quantity)).toFixed(2)}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-4">
-                            <p className="text-sm text-slate-400">
-                              Quantity: {item.quantity}
+                      return (
+                        <div
+                          key={productId}
+                          className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <div className="flex-1">
+                            <p className="font-medium text-white">
+                              {item.product?.name || "Unavailable product"}
                             </p>
-                            <div className="text-sm font-semibold text-slate-300">
-                              ₨ {(item.product.price * item.quantity).toFixed(2)}
-                            </div>
+                            <p className="text-sm text-slate-400">
+                              Price: Rs {toNumber(item.product?.price).toFixed(2)}
+                            </p>
                           </div>
-                        )}
-                      </div>
-                    ))}
+
+                          {editingOrderId === order._id ? (
+                            canEditProduct ? (
+                              <div className="flex items-center gap-3">
+                                <button
+                                  onClick={() =>
+                                    handleQuantityChange(
+                                      item.product._id,
+                                      (editQuantities[item.product._id] || item.quantity) - 1
+                                    )
+                                  }
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-400 transition hover:bg-rose-500/20 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
+                                  disabled={(editQuantities[item.product._id] || item.quantity) <= 1}
+                                >
+                                  <Minus size={16} />
+                                </button>
+
+                                <span className="inline-flex min-w-12 items-center justify-center rounded-lg border border-white/10 bg-slate-800/50 px-3 py-2 font-semibold text-white">
+                                  {editQuantities[item.product._id] || item.quantity}
+                                </span>
+
+                                <button
+                                  onClick={() =>
+                                    handleQuantityChange(
+                                      item.product._id,
+                                      (editQuantities[item.product._id] || item.quantity) + 1
+                                    )
+                                  }
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 transition hover:bg-emerald-500/20 hover:text-emerald-300"
+                                >
+                                  <Plus size={16} />
+                                </button>
+
+                                <div className="text-sm font-semibold text-slate-300">
+                                  Rs {(toNumber(item.product?.price) * (editQuantities[item.product._id] || item.quantity)).toFixed(2)}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-sm font-semibold text-amber-300">
+                                Product unavailable for editing
+                              </div>
+                            )
+                          ) : (
+                            <div className="flex items-center gap-4">
+                              <p className="text-sm text-slate-400">
+                                Quantity: {item.quantity}
+                              </p>
+                              <div className="text-sm font-semibold text-slate-300">
+                                Rs {(toNumber(item.product?.price) * toNumber(item.quantity, 1)).toFixed(2)}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </article>
